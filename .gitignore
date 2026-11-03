@@ -1,0 +1,10 @@
+.DS_Store
+stock/*
+!stock/.gitkeep
+build/
+zoom-zt2/
+*.code
+*.obj
+*.out
+__pycache__/
+dist/*.ZD2
