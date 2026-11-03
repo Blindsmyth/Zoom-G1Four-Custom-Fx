@@ -46,7 +46,7 @@ it with garbage and with signals (`tests/*.c`).
 ## 3. Graft it in
 
 ```bash
-scripts/build_tape.sh <stage> <FILE8> <0x06001xxx> <Disp7> "<extra cflags>" <dspload>
+scripts/build_tape.sh <stage> <FILE8> <0x06001xxx> "<Name up to 11 chars>" "<extra cflags>" <dspload>
 ```
 
 `build_tape.sh` is specific to the Chorus donor in three places you must adapt for another donor:
@@ -54,7 +54,7 @@ scripts/build_tape.sh <stage> <FILE8> <0x06001xxx> <Disp7> "<extra cflags>" <dsp
 | In | Chorus value | What to check in your donor |
 |---|---|---|
 | `elf_graft.py` `SLOT` | `0x4C0` | the stock audio function starts at `.text+0` and is this long; the trampoline is written there and the rest zeroed |
-| `build_tape.sh` | name patched at `.const+0x38` expecting `"Chorus"` | where your donor keeps its 8-byte name |
+| `build_tape.sh` | 12-byte name field patched at `.const+0x38`, expecting `"Chorus"` | where your donor keeps its name field |
 | kernel symbol | `Fx_MOD_Chorus` | any name; the script looks the entry up in the object's symbol table |
 
 If the audio function isn't at `.text+0` in your donor, extend `elf_graft.py` to patch the trampoline at the right

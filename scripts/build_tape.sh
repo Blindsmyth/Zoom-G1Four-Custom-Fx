@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Build Tape Chorus effects by GRAFTING compiled code into the stock Chorus ELF (no reassembly).
 #   build_tape.sh STAGE NAME ID [DISPLAY [CFLAGS [DSPLOAD]]]
-#     e.g.  build_tape.sh 3 XXTAPES 0x060010e0 TapeChS "" 26.5     (stereo)
-#           build_tape.sh 3 XXTAPEM 0x060010f0 TapeChM -DMONO 15.0 (mono)
+#     e.g.  build_tape.sh 3 XXTAPES 0x060010e0 "Tape FlutS" "" 26.5     (stereo)
+#           build_tape.sh 3 XXTAPEM 0x060010f0 "Tape FlutM" -DMONO 15.0 (mono)
 #     STAGE 1 = fixed short delay + Mix (delay-memory proof)   2 = clamped flutter   3 = full ToTape9 ranges
-#     DISPLAY = effect name (<= 7 chars, patched into the header AND the descriptor name)
+#     DISPLAY = effect name (<= 11 chars, patched into the header AND the descriptor name)
 #     DSPLOAD = declared DSP load in raw units (stock Chorus = 16.92; ~183 cycles/sample)
 set -euo pipefail
 STAGE="${1:?stage}"; NAME="${2:?name}"; ID="${3:?id}"; DISPLAY="${4:-}"; XCFLAGS="${5:-}"; DSPLOAD="${6:-}"
@@ -70,12 +70,12 @@ if [[ -n "$DISPLAY" ]]; then
 import sys
 from elftools.elf.elffile import ELFFile
 f, nm = sys.argv[1], sys.argv[2]
-assert len(nm) <= 7, "display name must be <= 7 chars (descriptor slot is 8 bytes incl. NUL)"
+assert len(nm) <= 11, "display name must be <= 11 chars (12-byte name field incl. NUL)"
 d = bytearray(open(f, "rb").read())
 c = [s for s in ELFFile(open(f, "rb")).iter_sections() if s.name == ".const"][0]
 o = c["sh_offset"] + 0x38
-assert d[o:o+8] == b"Chorus\0\0", d[o:o+8]
-d[o:o+8] = nm.encode().ljust(8, b"\0")
+assert d[o:o+12] == b"Chorus" + b"\0" * 6, d[o:o+12]      # 12-byte name field, then 0xffffffff
+d[o:o+12] = nm.encode().ljust(12, b"\0")
 open(f, "wb").write(d)
 print("descriptor name ->", nm)
 PY

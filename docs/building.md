@@ -18,9 +18,9 @@ scripts/fetch_stock.sh        # -> stock/CHORUS.ZD2   (sha256 1d78ab6c1a6e909ded
 
 ```bash
 source venv/bin/activate      # whatever your Python 3.12 env is
-#            stage name     id          display  extra-cflags  declared-dsp-load(raw)
-scripts/build_tape.sh 3 XXTAPES 0x060010e0 TapeChS ""      26.5     # stereo
-scripts/build_tape.sh 3 XXTAPEM 0x060010f0 TapeChM -DMONO  15.0     # mono
+#            stage name     id          display      extra-cflags  declared-dsp-load(raw)
+scripts/build_tape.sh 3 XXTAPES 0x060010e0 "Tape FlutS" ""      26.5     # stereo
+scripts/build_tape.sh 3 XXTAPEM 0x060010f0 "Tape FlutM" -DMONO  15.0     # mono
 ```
 
 Stages: `1` = fixed 1 ms delay + Mix (arena proof), `2` = flutter clamped to ±2 %, `3` = full ToTape9 ranges.

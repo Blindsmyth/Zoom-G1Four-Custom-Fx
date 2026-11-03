@@ -12,7 +12,7 @@ The first effect is **Tape Chorus**: the wow & flutter section of Airwindows
 
 ## Tape Chorus
 
-| | `TapeChS` (stereo) | `TapeChM` (mono) |
+| | `Tape FlutS` (stereo) | `Tape FlutM` (mono) |
 |---|---|---|
 | File / ID | `XXTAPES.ZD2` / `0x060010e0` | `XXTAPEM.ZD2` / `0x060010f0` |
 | Category | MODULATION | MODULATION |
@@ -43,14 +43,14 @@ byte-identical to ours (check against [`dist/SHA256SUMS`](dist/SHA256SUMS)). Ful
 
 ```bash
 scripts/fetch_stock.sh                                                    # stock Chorus from Zoom's server
-scripts/build_tape.sh 3 XXTAPES 0x060010e0 TapeChS ""     26.5            # -> dist/XXTAPES.ZD2 (stereo)
-scripts/build_tape.sh 3 XXTAPEM 0x060010f0 TapeChM -DMONO 15.0            # -> dist/XXTAPEM.ZD2 (mono)
+scripts/build_tape.sh 3 XXTAPES 0x060010e0 "Tape FlutS" ""     26.5          # -> dist/XXTAPES.ZD2 (stereo)
+scripts/build_tape.sh 3 XXTAPEM 0x060010f0 "Tape FlutM" -DMONO 15.0            # -> dist/XXTAPEM.ZD2 (mono)
 shasum -a 256 -c dist/SHA256SUMS
 # pedal in PC mode, Guitar Lab closed, AUTOSAVE OFF, nothing experimental in a saved patch
 python scripts/install_zd2.py dist/XXTAPES.ZD2 dist/XXTAPEM.ZD2
 ```
 
-Look for **TapeChS** / **TapeChM** under MODULATION. Test in an unsaved patch. To remove:
+Look for **Tape FlutS** / **Tape FlutM** under MODULATION. Test in an unsaved patch. To remove:
 `python scripts/install_zd2.py --remove XXTAPES.ZD2 --remove XXTAPEM.ZD2`.
 
 ## What is in this repo

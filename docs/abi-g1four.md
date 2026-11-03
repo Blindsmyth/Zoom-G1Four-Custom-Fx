@@ -75,11 +75,11 @@ kernel's measured response matches the ideal response of this chain to within 0.
 ## The `.const` descriptor (stock Chorus layout, inferred)
 
 `Chorus` (336 bytes) at `.const+0` is an array of 0x38-byte entries: entry 0 `OnOff`, entry 1 the effect
-(name `"Chorus\0\0"` at `+0x38`), then `Depth`, `Rate`, `Tone`, `Mix` at `+0x70, +0xa8, +0xe0, +0x118`.
+(its 12-byte name field, `"Chorus"` + zeros, at `+0x38`; every knob entry starts the same way, so display names can be up to 11 characters), then `Depth`, `Rate`, `Tone`, `Mix` at `+0x70, +0xa8, +0xe0, +0x118`.
 Code pointers are stored in the entries and relocated at load: `_onf` at `+0x1c`, `_init` at `+0x54`,
 the audio function at `+0x58`, edit handlers inside the knob entries. `effectTypeImageInfo` (304 bytes at
 `+0x150`) points at the on-screen picture, the category icon and the add/delete icon. We patch only the
-8-byte name (`scripts/build_tape.sh` asserts it is `"Chorus"` first); the rest stays byte-identical.
+12-byte name field (`scripts/build_tape.sh` asserts it is `"Chorus"` first); the rest stays byte-identical.
 
 ## The container
 
