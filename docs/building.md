@@ -23,6 +23,10 @@ scripts/build_tape.sh 3 XXTAPES 0x060010e0 "Tape FlutS" ""      26.5     # stere
 scripts/build_tape.sh 3 XXTAPEM 0x060010f0 "Tape FlutM" -DMONO  15.0     # mono
 ```
 
+Defaults are `DEF_DEPTH=35 DEF_RATE=38 DEF_TONE=7 DEF_MIX=100` (environment variables, UI units; see
+`scripts/patch_const.py` for the stock values and ranges). The tile/icon come from `scripts/make_tile.py`
+(`python scripts/make_tile.py stereo --preview` shows it as ASCII art).
+
 Stages: `1` = fixed 1 ms delay + Mix (arena proof), `2` = flutter clamped to ±2 %, `3` = full ToTape9 ranges.
 The result is `dist/<name>.ZD2` (git-ignored: it contains Zoom's Chorus). The build is deterministic: with the
 stock `CHORUS.ZD2` above and the toolchain versions listed, rebuilding gives byte-identical files; verify with

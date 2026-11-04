@@ -30,6 +30,9 @@ Knobs (they reuse the stock Chorus' four knobs and edit handlers):
 | **Tone** | the stock Chorus tone chain: 0–6 sweep a low-pass 250 Hz → 10 kHz, 7–10 open it and add a treble shelf (up to +6 dB) with bass cut |
 | **Mix** | dry/wet crossfade (0 = dry, 100 = wet) |
 
+**Defaults** for a newly added effect: Depth 35, Rate 38, Tone 7, Mix 100. The on-screen tile reads
+"TAPE / FLUT" with a flutter-wave pictogram (one wave = mono, two interleaved waves = stereo).
+
 Full-range settings are deliberately as extreme as the original plugin: at maximum Depth *and* Rate the
 pitch swings from about −68 % to +96 % ("modulated to death" — that is ToTape9). The knobs are
 gentle until the top of their travel because of the plugin's cubic and sixth-power curves.

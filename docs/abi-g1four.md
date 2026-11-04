@@ -81,6 +81,26 @@ the audio function at `+0x58`, edit handlers inside the knob entries. `effectTyp
 `+0x150`) points at the on-screen picture, the category icon and the add/delete icon. We patch only the
 12-byte name field (`scripts/build_tape.sh` asserts it is `"Chorus"` first); the rest stays byte-identical.
 
+### Knob entries: range and default
+
+Each knob entry (`Depth` @+0x70, `Rate` @+0xa8, `Tone` @+0xe0, `Mix` @+0x118) starts with its 12-byte name; then
+`+0x0c` = maximum UI value, `+0x10` = **default UI value** (what a freshly added effect starts at), `+0x14` =
+a second range field. Stock Chorus: Depth max 100 / default 40, Rate 49 / 24, Tone 10 / 7, Mix 100 / 50.
+`scripts/patch_const.py` rewrites the defaults (after checking the stock values) — patches that already contain
+the effect keep their stored values; only newly added instances start from the new defaults.
+
+### The on-screen picture
+
+`effectTypeImageInfo` (`.const+0x150`) is three records `{width, height, pointer}`: the effect tile
+(23×30 → `picTotalDisplay_*`, 92 bytes), the category icon (20×10) and the add/delete icon (24×22). A picture
+is **column-major, one byte = 8 vertical pixels, bit 0 = top row of each 8-row page** (the 23×30 tile is
+23 columns × 4 pages; in the stock Chorus the last 4 rows are blank and the drawn area is 28 rows with a
+rounded 1-px border). `scripts/make_tile.py` draws our tile with a 3×5 font.
+The container's `ICON` section carries the same picture as a 23×30 1-bit BMP (62-byte header, bottom-up,
+4-byte rows, palette 0 = black / 1 = white) drawn as the **inverse** of the tile.
+The stock Chorus' add/delete and category icons are the *Dynamics* ones (a compressor-curve glyph and the text
+"DYN"); we leave them alone.
+
 ## The container
 
 * Header: `ZDLF`, length (always 120), CRC32, target bits, 73 unknown bytes, version (4 chars), group
