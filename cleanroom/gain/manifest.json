@@ -1,0 +1,23 @@
+{
+  "name": "CR Gain",
+  "filename": "XXSHGAIN",
+  "id": "06001100",
+  "version": "1.00",
+  "display": "CR GAIN",
+  "badge": "CR",
+  "description": "Clean-room level trim for the G1 FOUR: Stomphacks' gain kernel and scaffold, no Zoom bytes. 80 is unity, 100 is +3.5 dB.",
+  "dspload": 8,
+  "allow_any_id": true,
+  "kernel": "gain.c",
+  "state_bytes": 16,
+  "scaffold": "cleanroom",
+  "params": [
+    {
+      "name": "Level",
+      "max": 100,
+      "default": 80,
+      "curve": "stock_vol",
+      "explanation": "Output level. 80 is unity gain, 100 is +3.5 dB."
+    }
+  ]
+}

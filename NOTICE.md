@@ -29,5 +29,8 @@ ZOOM Corporation or Airwindows.
 ## Tools and prior work used (not included)
 
 * [zoom-zt2](https://github.com/mungewell/zoom-zt2) (`decode_effect.py`, `zoomzt2.py`) — used by the build and install scripts.
-* [stomphacks](https://github.com/thammer/stomphacks), [ZoomMultistompZDL](https://github.com/repeat98/ZoomMultistompZDL) — documentation we learned from; each has its own licence.
+* [stomphacks](https://github.com/thammer/stomphacks) (MIT, Thomas Hammer) — its build pipeline (not included) generates the
+  clean-room effects in `cleanroom/`, and `cleanroom/gain/gain.c` is its gain kernel, unchanged; licence in
+  `cleanroom/LICENSE.stomphacks`. Those builds carry no Zoom bytes.
+* [ZoomMultistompZDL](https://github.com/repeat98/ZoomMultistompZDL) — documentation we learned from; each has its own licence.
 * TI C6000 Code Generation Tools 8.3.12 — TI's licence applies.

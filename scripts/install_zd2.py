@@ -51,7 +51,18 @@ def drain(p):
         pass
 
 
+def guitar_lab_running():
+    """Guitar Lab talks to the pedal over the same port; two clients at once corrupt the file protocol."""
+    import subprocess
+    try:
+        return subprocess.run(["pgrep", "-f", "ZOOM Guitar Lab"], capture_output=True).returncode == 0
+    except OSError:
+        return False
+
+
 def main():
+    if guitar_lab_running():
+        sys.exit("ZOOM Guitar Lab is running: quit it first. Nothing was changed.")
     meta = []
     for f in files:
         d = open(f, "rb").read()
@@ -91,6 +102,9 @@ def main():
         open(FLST_CACHE + ".live", "wb").write(flst)
         print(f"Live FLST_SEQ downloaded ({len(flst)} bytes)")
         for old in remove:
+            # The pedal knows the file name only: a path ("dist/X.ZD2") is never in the list, and a check
+            # on it silently skipped the record while the file itself was deleted (2026-11-05).
+            old = os.path.basename(old)
             if old.encode() in flst:
                 print("Removing from list:", old); flst = pedal.remove_effect(flst, old)
             if T(pedal.file_check, old):

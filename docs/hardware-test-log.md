@@ -54,7 +54,26 @@ instruction-for-instruction identical to the stock one.
 | `XXTAPE3` rebuilt | full stock tone chain (HP/shelf + LP) per channel, separate L/R delay lines | works; "this is solid" |
 | `XXTAPES` / `XXTAPEM` | stereo and mono builds, `-O2 -mu`, honest declared DSP loads (10.6 % / 6.0 %) | installed; maintainer: "this is great" |
 
+## Round 5 — clean room (no Zoom bytes at all; see `cleanroom/README.md`)
+
+Firmware 2.00, autosave off, 2026-11-05. Installed with `install_zd2.py`; the file read back from the pedal
+byte-identical to the build, and the record was present in the live effect list read back afterwards.
+
+| Build | What it was | Result |
+|---|---|---|
+| `XXSHGAIN` (CR Gain, `0x06001100`, SHA-256 `228166f1…052a8cb7`) | Stomphacks' gain kernel and generated scaffold (stub, init, bypass, edit handler, tables, container), unchanged except the header target `0x0090` → `0x0002` (`g1_retarget.py`); one picture record, Stomphacks' `ICON` frame, `DT_BIND_NOW` set, no shuttle copy | maintainer: "it plays fine" after a power cycle → *an effect built from original source alone runs on the G1 FOUR*. Asked about browsing past it, the Level sweep, bypass and a chain edit: "all fine" |
+
+Removal (2026-11-05): the effect file is gone from the pedal, and the live effect list read back has 127
+records, the 128 from before minus exactly the CR Gain record; disk use back to 94.6 %. Boot after removal: "boots
+normally". So the build loads on the stock firmware, plays and is removed again.
+
 ## Installer incidents (nothing was damaged)
+
+* `install_zd2.py --remove dist/cleanroom/XXSHGAIN.ZD2` (2026-11-05) deleted the file but kept its effect-list
+  record: the list check searched for the whole path, the pedal's commands used the file name. The list was
+  written back unchanged, so for a few minutes the list named a missing file; the pedal was not power-cycled in
+  that state. Guitar Lab was also open during that run. → `--remove` now uses the file name, and the installer
+  refuses to run while Guitar Lab is open; a second run removed the record cleanly (checked above).
 
 * Two installer runs stalled waiting for a reply from a pedal that had stopped answering (it was still
   frozen from a crashed effect). No transfer was in progress; the session was closed cleanly and the
