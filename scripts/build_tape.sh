@@ -15,17 +15,19 @@ source "$SCRIPT_DIR/env.sh"
 PYTHON="${PYTHON:-python3}"
 DE="$ZT2_DIR/decode_effect.py"
 DONOR="$STOCK_DIR/CHORUS.ZD2"
-W="$OSS_PORT/build/tape$STAGE"; mkdir -p "$W"
+OPT="${OPT:--O2 -mu}"      # Dual Shift uses OPT="-O2" (software pipelining)
+KSRC="${KSRC:-$OSS_PORT/src/tapechorus.c}"; KOBJ="$(basename "$KSRC" .c)"
+W="$OSS_PORT/build/${KOBJ}_$STAGE"; mkdir -p "$W"
 
 "$PYTHON" "$DE" -c "$W/stock.code" -b "$W/stock_icon.bmp" "$DONOR"
 # kernel: compile, take .text, pad to 32
-"$TI_CGT/bin/cl6x" -mv6740 --abi=eabi -O2 -mu $XCFLAGS -DSTAGE="$STAGE" --include_path="$TI_CGT/include" --visibility=hidden \
-    --diag_wrap=off --diag_warning=225 -c --obj_directory="$W" "$OSS_PORT/src/tapechorus.c"
-"$PYTHON" - "$W" <<'PY'
+"$TI_CGT/bin/cl6x" -mv6740 --abi=eabi $OPT $XCFLAGS -DSTAGE="$STAGE" --include_path="$TI_CGT/include" --visibility=hidden \
+    --diag_wrap=off --diag_warning=225 -c --obj_directory="$W" "$KSRC"
+"$PYTHON" - "$W" "$KOBJ" <<'PY'
 import sys
 from elftools.elf.elffile import ELFFile
 w=sys.argv[1]
-e=ELFFile(open(w+'/tapechorus.obj','rb'))
+e=ELFFile(open(w+'/'+sys.argv[2]+'.obj','rb'))
 t=[x for x in e.iter_sections() if x.name=='.text' and x['sh_type']=='SHT_PROGBITS'][0]
 assert not any(r.num_relocations() for r in e.iter_sections() if r.name in ('.rela.text','.rel.text')), "kernel needs relocations"
 assert t['sh_addralign']>=32 or True
@@ -67,11 +69,13 @@ assert t['sh_addr']==0
 open(w+'/tramp.bin','wb').write(t.data()); print('trampoline',len(t.data()),'bytes at 0')
 PY
 "$PYTHON" "$SCRIPT_DIR/elf_graft.py" "$W/stock.code" "$W/kernel.bin" "$W/tramp.bin" "$W/graft.code"
-VARIANT=stereo; [[ "$XCFLAGS" == *-DMONO* ]] && VARIANT=mono
+VARIANT="${TILE_VARIANT:-stereo}"; [[ -z "${TILE_VARIANT:-}" && "$XCFLAGS" == *-DMONO* ]] && VARIANT=mono
 # default knob values (UI units; stock Chorus: 40 / 24 / 7 / 50)
 DEF_DEPTH="${DEF_DEPTH:-35}"; DEF_RATE="${DEF_RATE:-38}"; DEF_TONE="${DEF_TONE:-7}"; DEF_MIX="${DEF_MIX:-100}"
 "$PYTHON" "$SCRIPT_DIR/make_tile.py" "$VARIANT" --tile "$W/tile.bin" --bmp "$W/stock_icon.bmp" "$W/icon.bmp"
-PC_ARGS=(--tile "$W/tile.bin" --defaults "$DEF_DEPTH" "$DEF_RATE" "$DEF_TONE" "$DEF_MIX")
+PC_ARGS=(--tile "$W/tile.bin")
+if [[ -n "${KNOBS:-}" ]]; then read -r -a KN <<< "$KNOBS"; PC_ARGS+=(--knobs "${KN[@]}")   # e.g. KNOBS="ShftA:24:19 Width:10:7 ShftB:24:7 Mix:100:50"
+else PC_ARGS+=(--defaults "$DEF_DEPTH" "$DEF_RATE" "$DEF_TONE" "$DEF_MIX"); fi
 [[ -n "$DISPLAY" ]] && PC_ARGS+=(--name "$DISPLAY")
 "$PYTHON" "$SCRIPT_DIR/patch_const.py" "$W/graft.code" "${PC_ARGS[@]}"
 "$PYTHON" "$DE" --donor "$W/graft.code" --donor-elf --force-name "${DISPLAY:-$NAME}" --force-id "$ID" -o "$EFFECTS_DIR/$NAME.ZD2" "$DONOR" >/dev/null

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Patch the descriptor data in the .const section of the (grafted) stock Chorus ELF, with guards.
 
-  patch_const.py ELF.code [--name NAME] [--tile TILE.bin] [--defaults DEPTH RATE TONE MIX]
+  patch_const.py ELF.code [--name NAME] [--tile TILE.bin] [--defaults DEPTH RATE TONE MIX | --knobs N:MAX:DEF x4]
 
  --name      effect name, <= 11 chars, in the 12-byte name field at .const+0x38 (expects "Chorus")
  --tile      the 92-byte 23x30 on-screen picture at .const+0x400 (expects the stock Chorus picture)
@@ -19,6 +19,8 @@ KNOBS = [("Depth", 0x70, 40, 100), ("Rate", 0xA8, 24, 49), ("Tone", 0xE0, 7, 10)
 ap = argparse.ArgumentParser()
 ap.add_argument("elf"); ap.add_argument("--name"); ap.add_argument("--tile")
 ap.add_argument("--defaults", nargs=4, type=int, metavar=("DEPTH", "RATE", "TONE", "MIX"))
+ap.add_argument("--knobs", nargs=4, metavar="NAME:MAX:DEFAULT",
+                help="rename and re-range the four knob entries (Depth Rate Tone Mix order), e.g. ShftA:24:19 Width:10:7 ShftB:24:7 Mix:100:50")
 a = ap.parse_args()
 
 d = bytearray(open(a.elf, "rb").read())
@@ -44,6 +46,20 @@ if a.defaults:
         assert cur_max == mx and cur_def == stock, (nm, cur_max, cur_def)
         assert 0 <= new <= mx, f"{nm} default {new} outside 0..{mx}"
         edits.append((off + 0x10, struct.pack("<I", new)))
+
+if a.knobs:
+    assert not a.defaults, "use --knobs or --defaults, not both"
+    for (nm, base, stock, mx), spec in zip(KNOBS, a.knobs):
+        name, new_max, new_def = spec.split(":"); new_max, new_def = int(new_max), int(new_def)
+        off = C + base
+        assert d[off:off + 12].rstrip(b"\0") == nm.encode(), (nm, d[off:off + 12])
+        cur_max, cur_def, cur_2 = struct.unpack_from("<III", d, off + 0x0C)
+        assert cur_max == mx and cur_def == stock, (nm, cur_max, cur_def)
+        assert len(name) <= 11 and 0 <= new_def <= new_max, (name, new_max, new_def)
+        edits.append((off, name.encode().ljust(12, b"\0")))
+        edits.append((off + 0x0C, struct.pack("<II", new_max, new_def)))
+        if cur_2 == mx:                                   # Rate and Mix repeat the maximum at +0x14
+            edits.append((off + 0x14, struct.pack("<I", new_max)))
 
 for off, data in edits:
     d[off:off + len(data)] = data

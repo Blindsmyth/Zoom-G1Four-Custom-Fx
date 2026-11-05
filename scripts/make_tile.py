@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Draw the 23x30 effect tile ("Tape / Flut" + a wave pictogram) for the Tape Flut effects.
+"""Draw the 23x30 effect tile for the Tape Flut effects ("Tape / Flut" + wave) and the Dual Shift effects ("Dual / Shift" + up/down arrows).
 
 The pedal's on-screen tile (`picTotalDisplay_*` in .const) is 23 columns x 4 pages: column-major, one byte
 = 8 vertical pixels, bit 0 = top row of the page.  The ZD2 container's ICON section holds the same picture
 as a 23x30 1-bit BMP, drawn inverted (palette index 1 = white).
 
-usage: make_tile.py {stereo|mono} --preview
+usage: make_tile.py {stereo|mono|dual|slicer} --preview
        (imported by build_tape.sh via:  make_tile.py {stereo|mono} --tile OUT.bin --bmp STOCK_ICON.bmp OUT.bmp)
 """
 import math, sys
@@ -19,6 +19,12 @@ FONT = {                            # 3x5 glyphs, as in the stock tile's letters
     "F": ["###", "#..", "##.", "#..", "#.."],
     "L": ["#..", "#..", "#..", "#..", "###"],
     "U": ["#.#", "#.#", "#.#", "#.#", "###"],
+    "D": ["##.", "#.#", "#.#", "#.#", "##."],
+    "S": [".##", "#..", ".#.", "..#", "##."],
+    "H": ["#.#", "#.#", "###", "#.#", "#.#"],
+    "I": ["###", ".#.", ".#.", ".#.", "###"],
+    "C": [".##", "#..", "#..", "#..", ".##"],
+    "K": ["#.#", "#.#", "##.", "#.#", "#.#"],
 }
 
 def canvas(variant):
@@ -33,6 +39,32 @@ def canvas(variant):
             for dy, row in enumerate(FONT[ch]):
                 for dx, c in enumerate(row):
                     if c == "#": px[y0 + dy][x0 + 4 * i + dx] = 1
+    if variant == "slicer":
+        text("CLK", 3)
+        text("SLICE", 10)
+        # gate pictogram, rows 17..23: a pulse train with uneven (Euclidean-looking) gaps
+        pattern = [1, 0, 0, 1, 0, 1, 0, 0]          # 8 cells x 2 px, from x = 3
+        y_hi, y_lo = 17, 23
+        prev = 0
+        for c, on in enumerate(pattern):
+            x0 = 3 + 2 * c
+            for x in (x0, x0 + 1):
+                px[y_hi if on else y_lo][x] = 1
+            if on != prev:                          # vertical edge at the cell boundary
+                for y in range(y_hi, y_lo + 1): px[y][x0] = 1
+            prev = on
+        return px
+    if variant == "dual":
+        text("DUAL", 3)
+        text("SHIFT", 10)
+        def arrow(cx, up):                          # 5-row arrow, rows 18..23
+            for dy in range(6): px[18 + dy][cx] = 1
+            for k in (1, 2):
+                y = (18 + k) if up else (23 - k)
+                px[y][cx - k] = px[y][cx + k] = 1
+        arrow(7, True)
+        arrow(15, False)
+        return px
     text("TAPE", 3)
     text("FLUT", 10)
     # flutter pictogram, rows 17..24: a sine ("wow") -- two anti-phase sines for stereo

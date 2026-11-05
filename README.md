@@ -56,6 +56,14 @@ python scripts/install_zd2.py dist/XXTAPES.ZD2 dist/XXTAPEM.ZD2
 Look for **Tape FlutS** / **Tape FlutM** under MODULATION. Test in an unsaved patch. To remove:
 `python scripts/install_zd2.py --remove XXTAPES.ZD2 --remove XXTAPEM.ZD2`.
 
+## MIDI clock: ClkSlicer and the OS patch (research)
+
+**ClkSlicer** is a 16-step Euclidean gate that stays locked to a DAW's bar over USB MIDI clock
+([docs/clock-slicer.md](docs/clock-slicer.md)). It needs the **MIDI clock OS patch** in [`firmware/`](firmware/README.md),
+which makes the pedal's master tempo follow MIDI clock and publishes Start/Stop and the clock count for
+effects. The patch is built on your computer from Zoom's own updater, and Zoom's stock updater restores the
+pedal. It is research, at your own risk.
+
 ## What is in this repo
 
 | Path | |
